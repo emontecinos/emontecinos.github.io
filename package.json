@@ -2,17 +2,26 @@
   "homepage": "https://emontecinos.github.io/acciones-app",
   "name": "acciones-app",
   "version": "0.1.0",
+  "main": "index.js",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
+    "http": "0.0.1-security",
+    "nodemon": "^2.0.3",
+    "os-utils": "0.0.14",
+    "parcel": "^1.12.4",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-scripts": "3.4.1"
+    "react-scripts": "3.4.1",
+    "recharts": "^1.8.5",
+    "socket.io": "^2.3.0"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "npm run start:client",
+    "start:client": "parcel src/index.html",
+    "start:server": "nodemon src/server.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
