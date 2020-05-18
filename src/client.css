@@ -1,0 +1,13 @@
+.Grafico-Grid {
+    display: grid;
+    grid-template-columns: auto auto;
+    background-color: white;
+    padding: 10px;
+    
+}
+
+.Grafico {
+    padding: 20px;
+    font-size: 10px;
+    text-align: center;
+}
