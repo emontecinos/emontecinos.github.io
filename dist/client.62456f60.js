@@ -100375,10 +100375,14 @@ class SocketSwitch extends _react.Component {
   render() {
     return /*#__PURE__*/_react.default.createElement("label", {
       htmlFor: "material-switch"
-    }, /*#__PURE__*/_react.default.createElement("span", null, "on off"), /*#__PURE__*/_react.default.createElement(_reactSwitch.default, {
+    }, /*#__PURE__*/_react.default.createElement("span", {
+      style: {
+        color: "white"
+      }
+    }, "Conectarse al mundo"), /*#__PURE__*/_react.default.createElement(_reactSwitch.default, {
       checked: this.state.checked,
       onChange: this.handleChange,
-      onColor: "#86d3ff",
+      onColor: "#blue",
       onHandleColor: "#2693e6",
       handleDiameter: 30,
       uncheckedIcon: false,
@@ -100477,7 +100481,63 @@ var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
-},{"_css_loader":"../node_modules/parcel/src/builtins/css-loader.js"}],"client.js":[function(require,module,exports) {
+},{"_css_loader":"../node_modules/parcel/src/builtins/css-loader.js"}],"../node_modules/react-bootstrap/esm/Table.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
+
+var _objectWithoutPropertiesLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/objectWithoutPropertiesLoose"));
+
+var _classnames = _interopRequireDefault(require("classnames"));
+
+var _react = _interopRequireDefault(require("react"));
+
+var _ThemeProvider = require("./ThemeProvider");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Table = _react.default.forwardRef(function (_ref, ref) {
+  var bsPrefix = _ref.bsPrefix,
+      className = _ref.className,
+      striped = _ref.striped,
+      bordered = _ref.bordered,
+      borderless = _ref.borderless,
+      hover = _ref.hover,
+      size = _ref.size,
+      variant = _ref.variant,
+      responsive = _ref.responsive,
+      props = (0, _objectWithoutPropertiesLoose2.default)(_ref, ["bsPrefix", "className", "striped", "bordered", "borderless", "hover", "size", "variant", "responsive"]);
+  var decoratedBsPrefix = (0, _ThemeProvider.useBootstrapPrefix)(bsPrefix, 'table');
+  var classes = (0, _classnames.default)(className, decoratedBsPrefix, variant && decoratedBsPrefix + "-" + variant, size && decoratedBsPrefix + "-" + size, striped && decoratedBsPrefix + "-striped", bordered && decoratedBsPrefix + "-bordered", borderless && decoratedBsPrefix + "-borderless", hover && decoratedBsPrefix + "-hover");
+
+  var table = /*#__PURE__*/_react.default.createElement("table", (0, _extends2.default)({}, props, {
+    className: classes,
+    ref: ref
+  }));
+
+  if (responsive) {
+    var responsiveClass = decoratedBsPrefix + "-responsive";
+
+    if (typeof responsive === 'string') {
+      responsiveClass = responsiveClass + "-" + responsive;
+    }
+
+    return /*#__PURE__*/_react.default.createElement("div", {
+      className: responsiveClass
+    }, table);
+  }
+
+  return table;
+});
+
+var _default = Table;
+exports.default = _default;
+},{"@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/objectWithoutPropertiesLoose":"../node_modules/@babel/runtime/helpers/esm/objectWithoutPropertiesLoose.js","classnames":"../node_modules/classnames/index.js","react":"../node_modules/react/index.js","./ThemeProvider":"../node_modules/react-bootstrap/esm/ThemeProvider.js"}],"client.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -100498,6 +100558,8 @@ var _recharts = require("recharts");
 var _navbar = require("../src/components/navbar");
 
 require("./client.css");
+
+var _Table = _interopRequireDefault(require("react-bootstrap/Table"));
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
 
@@ -100548,6 +100610,27 @@ let exchange_info = [];
 exports.exchange_info = exchange_info;
 let stocks_info = [];
 exports.stocks_info = stocks_info;
+let max_values = [];
+let min_values = [];
+let last_value = [];
+let variaciones = [];
+var llenado = 0;
+
+function llenar_min_max_values(stocks_info) {
+  if (llenado === 0 && stocks_info.length > 0) {
+    Object.keys(stocks_info).map(key => {
+      min_values[stocks_info[key]['ticker']] = 1000000;
+      max_values[stocks_info[key]['ticker']] = 0;
+      last_value[stocks_info[key]['ticker']] = 0;
+      variaciones[stocks_info[key]['ticker']] = 0;
+    });
+    llenado = 1;
+  }
+
+  console.log(max_values, min_values);
+  return 1;
+}
+
 socket.emit('EXCHANGES'
 /* */
 );
@@ -100573,19 +100656,150 @@ socket.once('STOCKS', data => {
   console.log('STOCKS'); // console.log(stocks_info);
 });
 
-function condition_exchange_active(exchange_info, dataupdate, exchange_active) {
+function filter_volume_exchange(exchange, databuysell, stocks_info) {
+  let companies_tickers = [];
+  Object.keys(stocks_info).map(key => {
+    if (exchange['listed_companies'].includes(stocks_info[key]['company_name'])) {
+      companies_tickers.push(stocks_info[key]['ticker']);
+    }
+  });
+  return databuysell.filter(i => companies_tickers.includes(i['ticker']));
+}
+
+function get_volumen_compraventa(exchange, databuysell) {
+  var compra = 0;
+  Object.keys(filter_volume_exchange(exchange, databuysell, stocks_info)).map(key => {
+    compra += databuysell[key]['volume'];
+  });
+  return compra;
+}
+
+function get_num_empresas(exchange) {
+  var num_empresas = exchange['listed_companies'].length;
+  return num_empresas;
+}
+
+function get_frac_volumen(exchange_info, exchange_ticker, databuy, datasell, stocks_info) {
+  var vol_activo = get_volumen_total(exchange_info[exchange_ticker], databuy, datasell, stocks_info);
+  var vol_total = 0;
+  Object.keys(exchange_info).map(exch => {
+    vol_total += get_volumen_total(exchange_info[exch], databuy, datasell, stocks_info);
+  });
+  var frac = 100 * vol_activo / vol_total;
+  return frac.toFixed(2);
+}
+
+function get_volumen_total(exchange, databuy, datasell, stocks_info) {
+  return get_volumen_compraventa(exchange, databuy, stocks_info) + get_volumen_compraventa(exchange, datasell, stocks_info);
+}
+
+function get_pais_compania(nombre_compania, stocks_info) {
+  let pais = "";
+  Object.keys(stocks_info).map(key => {
+    if (stocks_info[key]['company_name'] == nombre_compania) {
+      pais = stocks_info[key]['country'];
+    }
+  });
+  return pais;
+}
+
+function filter_by_company(ticker, databuysell) {
+  return databuysell.filter(i => i['ticker'] == ticker);
+}
+
+function get_vol_transado(nombre_compania, stocks_info, databuy, datasell) {
+  let ticker = "";
+  Object.keys(stocks_info).map(key => {
+    if (stocks_info[key]['company_name'] == nombre_compania) {
+      ticker = stocks_info[key]['ticker'];
+    }
+  });
+  var vol_vendido = 0;
+  var vol_comprado = 0;
+  Object.keys(filter_by_company(ticker, databuy)).map(key => {
+    vol_comprado += databuy[key]['volume'];
+  });
+  Object.keys(filter_by_company(ticker, datasell)).map(key => {
+    vol_vendido += datasell[key]['volume'];
+  });
+  return vol_comprado + vol_vendido;
+}
+
+function get_ticker(nombre_compania, stocks_info) {
+  let ticker = "";
+  Object.keys(stocks_info).map(key => {
+    if (stocks_info[key]['company_name'] == nombre_compania) {
+      ticker = stocks_info[key]['ticker'];
+    }
+  });
+  return ticker;
+}
+
+function get_max_min_value(dataupdate) {
+  console.log(min_values, max_values);
+  Object.keys(dataupdate).map(key => {
+    if (dataupdate[key]['value'] > max_values[dataupdate[key]['ticker']]) {
+      max_values[dataupdate[key]['ticker']] = dataupdate[key]['value'];
+    }
+
+    if (dataupdate[key]['value'] < min_values[dataupdate[key]['ticker']]) {
+      min_values[dataupdate[key]['ticker']] = dataupdate[key]['value'];
+    }
+  });
+  return 1;
+}
+
+function get_quote_base(nombre_compania, stocks_info) {
+  let quote = "";
+  Object.keys(stocks_info).map(key => {
+    if (stocks_info[key]['company_name'] == nombre_compania) {
+      quote = stocks_info[key]['quote_base'];
+      return quote;
+    }
+  });
+  return "USD";
+}
+
+function condition_exchange_active(exchange_info, dataupdate, exchange_active, stocks_info, databuy, datasell) {
   var exchange = get_exchange(exchange_info, exchange_active);
   console.log(exchange);
 
   if (exchange === null) {
-    return /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement("h2", null, "Elige un mercado we"));
+    return /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement("h4", null, "Informaci\xF3n mercados disponibles"), /*#__PURE__*/_react.default.createElement(_Table.default, {
+      striped: true,
+      bordered: true,
+      size: "sm"
+    }, /*#__PURE__*/_react.default.createElement("thead", null, /*#__PURE__*/_react.default.createElement("tr", null, /*#__PURE__*/_react.default.createElement("th", null, "Exchange"), /*#__PURE__*/_react.default.createElement("th", null, "Pais"), /*#__PURE__*/_react.default.createElement("th", null, "Vol Compra"), /*#__PURE__*/_react.default.createElement("th", null, "Vol Venta"), /*#__PURE__*/_react.default.createElement("th", null, "Vol Total"), /*#__PURE__*/_react.default.createElement("th", null, "Cantidad Acciones"), /*#__PURE__*/_react.default.createElement("th", null, "Participacion"))), /*#__PURE__*/_react.default.createElement("tbody", null, Object.keys(exchange_info).map(exchange_ticker => {
+      return /*#__PURE__*/_react.default.createElement("tr", null, /*#__PURE__*/_react.default.createElement("td", null, exchange_info[exchange_ticker]['name']), /*#__PURE__*/_react.default.createElement("td", null, exchange_info[exchange_ticker]['country']), /*#__PURE__*/_react.default.createElement("td", null, Intl.NumberFormat("de-DE").format(get_volumen_compraventa(exchange_info[exchange_ticker], databuy, stocks_info))), /*#__PURE__*/_react.default.createElement("td", null, Intl.NumberFormat("de-DE").format(get_volumen_compraventa(exchange_info[exchange_ticker], datasell, stocks_info))), /*#__PURE__*/_react.default.createElement("td", null, Intl.NumberFormat("de-DE").format(get_volumen_total(exchange_info[exchange_ticker], databuy, datasell, stocks_info))), /*#__PURE__*/_react.default.createElement("td", null, get_num_empresas(exchange_info[exchange_ticker])), /*#__PURE__*/_react.default.createElement("td", null, get_frac_volumen(exchange_info, exchange_ticker, databuy, datasell, stocks_info), "%"));
+    }))));
   } else {
-    return /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement("div", {
+    return /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement("h4", null, "Informaci\xF3n mercados disponibles"), /*#__PURE__*/_react.default.createElement(_Table.default, {
+      striped: true,
+      bordered: true,
+      size: "sm"
+    }, /*#__PURE__*/_react.default.createElement("thead", null, /*#__PURE__*/_react.default.createElement("tr", null, /*#__PURE__*/_react.default.createElement("th", null, "Exchange"), /*#__PURE__*/_react.default.createElement("th", null, "Pais"), /*#__PURE__*/_react.default.createElement("th", null, "Vol Compra"), /*#__PURE__*/_react.default.createElement("th", null, "Vol Venta"), /*#__PURE__*/_react.default.createElement("th", null, "Vol Total"), /*#__PURE__*/_react.default.createElement("th", null, "Cantidad Acciones"), /*#__PURE__*/_react.default.createElement("th", null, "Participacion"))), /*#__PURE__*/_react.default.createElement("tbody", null, Object.keys(exchange_info).map(exchange_ticker => {
+      return /*#__PURE__*/_react.default.createElement("tr", null, /*#__PURE__*/_react.default.createElement("td", null, exchange_info[exchange_ticker]['name']), /*#__PURE__*/_react.default.createElement("td", null, exchange_info[exchange_ticker]['country']), /*#__PURE__*/_react.default.createElement("td", null, Intl.NumberFormat("de-DE").format(get_volumen_compraventa(exchange_info[exchange_ticker], databuy, stocks_info))), /*#__PURE__*/_react.default.createElement("td", null, Intl.NumberFormat("de-DE").format(get_volumen_compraventa(exchange_info[exchange_ticker], datasell, stocks_info))), /*#__PURE__*/_react.default.createElement("td", null, Intl.NumberFormat("de-DE").format(get_volumen_total(exchange_info[exchange_ticker], databuy, datasell, stocks_info))), /*#__PURE__*/_react.default.createElement("td", null, get_num_empresas(exchange_info[exchange_ticker])), /*#__PURE__*/_react.default.createElement("td", null, get_frac_volumen(exchange_info, exchange_ticker, databuy, datasell, stocks_info), "%"));
+    }))), /*#__PURE__*/_react.default.createElement("h4", null, "Informaci\xF3n del Mercado ", exchange['name']), /*#__PURE__*/_react.default.createElement(_Table.default, {
+      striped: true,
+      bordered: true,
+      size: "sm"
+    }, /*#__PURE__*/_react.default.createElement("thead", null, /*#__PURE__*/_react.default.createElement("tr", null, /*#__PURE__*/_react.default.createElement("th", null, "Empresa"), /*#__PURE__*/_react.default.createElement("th", null, "Pais"), /*#__PURE__*/_react.default.createElement("th", null, "Vol Transado"), /*#__PURE__*/_react.default.createElement("th", null, "Maximo"), /*#__PURE__*/_react.default.createElement("th", null, "Minimo"), /*#__PURE__*/_react.default.createElement("th", null, "Ultimo Precio"), /*#__PURE__*/_react.default.createElement("th", null, "Variacion Porcentual"))), /*#__PURE__*/_react.default.createElement("tbody", null, exchange['listed_companies'].map(nombre_compania => {
+      return /*#__PURE__*/_react.default.createElement("tr", null, /*#__PURE__*/_react.default.createElement("td", null, nombre_compania), /*#__PURE__*/_react.default.createElement("td", null, get_pais_compania(nombre_compania, stocks_info)), /*#__PURE__*/_react.default.createElement("td", null, Intl.NumberFormat("de-DE").format(get_vol_transado(nombre_compania, stocks_info, databuy, datasell))), /*#__PURE__*/_react.default.createElement("td", null, Intl.NumberFormat("de-DE", {
+        style: "currency",
+        currency: get_quote_base(nombre_compania, stocks_info)
+      }).format(max_values[get_ticker(nombre_compania, stocks_info)])), /*#__PURE__*/_react.default.createElement("td", null, Intl.NumberFormat("de-DE", {
+        style: "currency",
+        currency: get_quote_base(nombre_compania, stocks_info)
+      }).format(min_values[get_ticker(nombre_compania, stocks_info)])), /*#__PURE__*/_react.default.createElement("td", null, Intl.NumberFormat("de-DE", {
+        style: "currency",
+        currency: get_quote_base(nombre_compania, stocks_info)
+      }).format(last_value[get_ticker(nombre_compania, stocks_info)])), /*#__PURE__*/_react.default.createElement("td", null, variaciones[get_ticker(nombre_compania, stocks_info)], " %"));
+    }))), /*#__PURE__*/_react.default.createElement("div", {
       className: "Grafico-Grid"
     }, exchange['listed_companies'].map(nombre_compania => {
       return /*#__PURE__*/_react.default.createElement("div", {
         className: "Grafico"
-      }, /*#__PURE__*/_react.default.createElement("h2", null, exchange_active), /*#__PURE__*/_react.default.createElement("h4", null, nombre_compania), /*#__PURE__*/_react.default.createElement(_recharts.LineChart, {
+      }, /*#__PURE__*/_react.default.createElement("h4", null, nombre_compania), /*#__PURE__*/_react.default.createElement(_recharts.LineChart, {
         width: 500,
         height: 300,
         data: filter_ticker(exchange_info, dataupdate, exchange_active, nombre_compania, stocks_info)
@@ -100606,29 +100820,76 @@ function condition_exchange_active(exchange_info, dataupdate, exchange_active) {
 
 const App = ({}) => {
   const [dataupdate, setData] = (0, _react.useState)([]);
-  const [data2, setData2] = (0, _react.useState)([]); // const [exchange_info,setDataExchange]=useState([]);
+  const [databuy, setDataBuy] = (0, _react.useState)([]);
+  const [datasell, setDataSell] = (0, _react.useState)([]); // const [exchange_info,setDataExchange]=useState([]);
   // const [stocks_info,setDataStocks]=useState([]);
   // Listen for update event, update state
 
   (0, _react.useEffect)(() => {
     socket.on('UPDATE', update => {
-      setData(currentData => [...currentData, update]);
-      console.log("Update\n"); // console.log(update);
+      var date = new Date(update.time).toLocaleDateString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      var datazo = update;
+      datazo['time'] = date;
+
+      if (!dataupdate.length) {
+        setData(currentData => [...currentData, datazo]);
+        variaciones[datazo['ticker']] = (100 * (datazo['value'] - last_value[datazo['ticker']]) / last_value[datazo['ticker']]).toFixed(2);
+        last_value[datazo['ticker']] = datazo['value'];
+      } else {
+        if (dataupdate[dataupdate.length - 1] != datazo) {
+          setData(currentData => [...currentData, datazo]);
+          variaciones[datazo['ticker']] = (100 * (datazo['value'] - last_value[datazo['ticker']]) / last_value[datazo['ticker']]).toFixed(2);
+          last_value[datazo['ticker']] = datazo['value'];
+          console.log(last_value);
+        }
+      }
     }), socket.on('BUY', value => {
-      setData2(currentData => [...currentData, value]);
-      console.log("BUY\n");
+      var date = new Date(value.time).toLocaleDateString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      var datazo = value;
+      datazo['time'] = date;
+
+      if (!databuy.length) {
+        setDataBuy(currentData => [...currentData, datazo]);
+      } else {
+        if (databuy[databuy.length - 1] != datazo) {
+          setDataBuy(currentData => [...currentData, datazo]);
+        }
+      }
     }), socket.on('SELL', value => {
-      setData2(currentData => [...currentData, value]);
-      console.log("SELL\n");
+      var date = new Date(value.time).toLocaleDateString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      var datazo = value;
+      datazo['time'] = date;
+
+      if (!datasell.length) {
+        setDataSell(currentData => [...currentData, datazo]);
+      } else {
+        if (datasell[datasell.length - 1] != datazo) {
+          setDataBuy(currentData => [...currentData, datazo]);
+        }
+      }
     });
   }, []);
+  llenar_min_max_values(stocks_info);
+  get_max_min_value(dataupdate);
   return /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement(_navbar.NavBar, {
     exch: exchange_info
-  }), console.log(_navbar.exchange_active), condition_exchange_active(exchange_info, dataupdate, _navbar.exchange_active));
+  }), condition_exchange_active(exchange_info, dataupdate, _navbar.exchange_active, stocks_info, databuy, datasell));
 };
 
 _reactDom.default.render( /*#__PURE__*/_react.default.createElement(App, null), document.getElementById("root"));
-},{"socket.io-client":"../node_modules/socket.io-client/lib/index.js","react":"../node_modules/react/index.js","react-dom":"../node_modules/react-dom/index.js","bootstrap/dist/css/bootstrap.min.css":"../node_modules/bootstrap/dist/css/bootstrap.min.css","recharts":"../node_modules/recharts/es6/index.js","../src/components/navbar":"components/navbar.js","./client.css":"client.css"}],"../node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"socket.io-client":"../node_modules/socket.io-client/lib/index.js","react":"../node_modules/react/index.js","react-dom":"../node_modules/react-dom/index.js","bootstrap/dist/css/bootstrap.min.css":"../node_modules/bootstrap/dist/css/bootstrap.min.css","recharts":"../node_modules/recharts/es6/index.js","../src/components/navbar":"components/navbar.js","./client.css":"client.css","react-bootstrap/Table":"../node_modules/react-bootstrap/esm/Table.js"}],"../node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -100656,7 +100917,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54832" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59044" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

@@ -22,11 +22,11 @@ class SocketSwitch extends Component {
     render () {
         return (
             <label htmlFor="material-switch">
-            <span>on off</span>
+            <span style={{color: "white"}}>Conectarse al mundo</span>
             <Switch
                 checked={this.state.checked}
                 onChange={this.handleChange}
-                onColor="#86d3ff"
+                onColor="#blue"
                 onHandleColor="#2693e6"
                 handleDiameter={30}
                 uncheckedIcon={false}

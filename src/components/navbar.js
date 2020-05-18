@@ -3,7 +3,7 @@ import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import SocketSwitch from './soketswitch';
-import {exchange_info} from '../client';
+import {exchange_info,stocks_info} from '../client';
 
 let exchange_active;
 class NavBar extends Component{
